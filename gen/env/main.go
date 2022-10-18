@@ -3,20 +3,27 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"html"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
-	"golang.org/x/net/html"
+	"github.com/PuerkitoBio/goquery"
 )
 
 type env struct {
-	Name string
+	Name        string
+	Description string
 }
 
 // TODO handle BUILDKITE_AGENT_META_DATA_
+var envsToExclude = []string{
+	"BUILDKITE_AGENT_META_DATA_",
+}
 
 func main() {
 	resp, err := http.Get("https://buildkite.com/docs/pipelines/environment-variables")
@@ -25,62 +32,73 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	doc, err := html.Parse(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.Fatalf("error parsing html: %+v", err)
 	}
 
 	var envs []env
-	var traverseHTML func(*html.Node)
-	traverseHTML = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "tr" {
-			var _env *env
-			for _, attr := range n.Attr {
-				if attr.Key == "id" {
-					_env = &env{
-						Name: attr.Val,
-					}
+	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
+		var envVar *env
+		if envName, exists := s.Attr("id"); exists {
+			for _, envToExclude := range envsToExclude {
+				if envName == envToExclude {
+					return
 				}
 			}
 
-			if _env != nil {
-				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					if c.Type == html.ElementNode && c.Data == "td" {
-						// fmt.Printf("%+v\n", c.Attr)
-					}
-				}
-			}
-
-			if _env != nil {
-				envs = append(envs, *_env)
+			envVar = &env{
+				Name: envName,
 			}
 		}
 
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			traverseHTML(c)
+		if envVar == nil {
+			return
 		}
-	}
-	traverseHTML(doc)
+		envVar.Description = s.Find("td").Text()
+		envVar.Description = commentify(envVar.Description)
 
-	fmt.Printf("+%v", envs)
+		envs = append(envs, *envVar)
+	})
 
-	// wd, err := os.Getwd()
-	// if err != nil {
-	// 	log.Fatalf("unable to get wd: %+v", err)
-	// }
-	// fmt.Printf("wd: %s", wd)
+	os.RemoveAll("../../env/env.go")
 
 	file, err := os.OpenFile("../../env/env.go", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatalf("unable to open file: %+v", err)
 	}
 
-	envTemplate, err := template.New("env.go.tmpl").ParseFiles("env.go.tmpl")
+	envTemplate, err := template.New("env.go.tmpl").Funcs(
+		template.FuncMap{
+			"unescape": func(s string) string {
+				return html.UnescapeString(s)
+			},
+		},
+	).ParseFiles("env.go.tmpl")
 	if err != nil {
 		log.Fatalf("error creating template: %+v", err)
 	}
-	err = envTemplate.Execute(file, envs)
+
+	var data []byte
+	buffer := bytes.NewBuffer(data)
+	err = envTemplate.Execute(buffer, envs)
 	if err != nil {
 		log.Fatalf("error executing template: %+v", err)
 	}
+
+	// text/template package is auto-escaping some HTML characters like double-quotes
+	// hence unescaping before we write it to the file
+	newContent := html.UnescapeString(buffer.String())
+	file.WriteString(newContent)
+	fmt.Printf("generated %s\n", file.Name())
+}
+
+func commentify(comment string) string {
+	comment = strings.TrimSpace(comment)
+	comment = strings.ReplaceAll(comment, "\n\n", "")
+	var commentedLines []string
+	for _, line := range strings.Split(comment, "\n") {
+		commentedLines = append(commentedLines, fmt.Sprintf("// %s", strings.Trim(line, " ")))
+	}
+	return strings.Join(commentedLines, "\n")
 }
