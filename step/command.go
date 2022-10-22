@@ -28,7 +28,7 @@ type Command struct {
 	//
 	// [agent tag]: https://buildkite.com/docs/agent/v3/cli-start#setting-tags
 	// [target specific agents]: https://buildkite.com/docs/agent/v3/cli-start#agent-targeting
-	Agents interface{} `json:"agents,omitempty"`
+	Agents interface{} `json:"agents,omitempty"` // TODO: check if there is a more apt type for this
 
 	// Whether to continue to run this step if any of the steps named in the depends_on attribute fail.
 	AllowDependencyFailure *bool `json:"allow_dependency_failure,omitempty"`
@@ -135,7 +135,6 @@ type Command struct {
 }
 
 func (c Command) MarshalJSON() ([]byte, error) {
-	fmt.Println("inside command marshal json")
 	if c.Command == nil && len(c.Commands) == 0 {
 		return nil, errors.New("either Command or Commands field should be present")
 	}
