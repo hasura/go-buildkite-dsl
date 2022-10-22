@@ -3,6 +3,7 @@ package step
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 // Command is used to created a Command step in buildkite.
@@ -105,7 +106,7 @@ type Command struct {
 	// An array of [plugins] for this step.
 	//
 	// [plugins]: https://buildkite.com/docs/plugins
-	Plugins interface{} `json:"plugins,omitempty"`
+	Plugins []Plugin `json:"plugins,omitempty"`
 
 	// Adjust the priority for a specific job, as a positive or negative integer.
 	Priority *int `json:"priority,omitempty"`
@@ -134,6 +135,7 @@ type Command struct {
 }
 
 func (c Command) MarshalJSON() ([]byte, error) {
+	fmt.Println("inside command marshal json")
 	if c.Command == nil && len(c.Commands) == 0 {
 		return nil, errors.New("either Command or Commands field should be present")
 	}
@@ -143,9 +145,20 @@ func (c Command) MarshalJSON() ([]byte, error) {
 	// Hence introducing a psuedo type with same data to avoid entering this method
 	// during JSON marshalling.
 	type psuedo Command
-	cmd := psuedo(c)
 
-	return json.Marshal(cmd)
+	transformedPlugins := make(map[string]Plugin)
+	for _, plugin := range c.Plugins {
+		key := fmt.Sprintf("%s#%s", plugin.Name(), plugin.Version())
+		transformedPlugins[key] = plugin
+	}
+
+	return json.Marshal(struct {
+		psuedo
+		TransformedPlugins map[string]Plugin `json:"plugins,omitempty"`
+	}{
+		psuedo(c),
+		transformedPlugins,
+	})
 }
 
 type SoftFail struct {
