@@ -14,6 +14,16 @@ type Block struct {
 	// Example: "Release"
 	Block string `json:"block"`
 
+	// The state that the build is set to when the build is blocked by this block step.
+	// The default is passed. When the blocked_state of a block step is set to failed,
+	// the step that triggered it will be stuck in the running state until it is manually unblocked.
+	//
+	// Values: passed, failed, running
+	BlockedState *BlockedState `json:"blocked_state,omitempty"`
+
+	// A unique string to identify the block step.
+	Key *string `json:"key,omitempty"`
+
 	BlockAttributes
 }
 
@@ -28,13 +38,6 @@ type BlockAttributes struct {
 	//
 	// Available input field types: text, select
 	Fields []Field `json:"fields,omitempty"`
-
-	// The state that the build is set to when the build is blocked by this block step.
-	// The default is passed. When the blocked_state of a block step is set to failed,
-	// the step that triggered it will be stuck in the running state until it is manually unblocked.
-	//
-	// Values: passed, failed, running
-	BlockedState *BlockedState `json:"blocked_state,omitempty"`
 
 	// The [branch pattern] defining which branches will include this step in their builds.
 	//
@@ -53,9 +56,6 @@ type BlockAttributes struct {
 	// A list of step keys that this step depends on. This step will only
 	// run after the named steps have completed.
 	DependsOn []Dependency `json:"depends_on,omitempty"`
-
-	// A unique string to identify the block step.
-	Key *string `json:"key,omitempty"`
 
 	// Whether to continue to run this step if any of the steps named in the depends_on attribute fail.
 	AllowDependencyFailure *bool `json:"allow_dependency_failure,omitempty"`
