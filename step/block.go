@@ -5,12 +5,19 @@ import (
 	"errors"
 )
 
+// Block is used to created a Block step in buildkite.
+//
+// For more details, refer: https://buildkite.com/docs/pipelines/block-step
 type Block struct {
 	// Block step name.
 	//
-	// Example: "Release"s
+	// Example: "Release"
 	Block string `json:"block"`
 
+	BlockAttributes
+}
+
+type BlockAttributes struct {
 	// The instructional message displayed in the dialog box when the unblock step is activated.
 	//
 	// Example: "Release to production?"
