@@ -175,3 +175,6 @@ func (s SelectField) MarshalJSON() ([]byte, error) {
 	p := psuedo(s)
 	return json.Marshal(p)
 }
+
+// Step is defined on Block step to allow it to be used as [pipeline.Step]
+func (Block) Step() {}

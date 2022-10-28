@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/hasura/go-buildkite-dsl/agent"
 )
 
 // Command is used to created a Command step in buildkite.
@@ -28,7 +30,7 @@ type Command struct {
 	//
 	// [agent tag]: https://buildkite.com/docs/agent/v3/cli-start#setting-tags
 	// [target specific agents]: https://buildkite.com/docs/agent/v3/cli-start#agent-targeting
-	Agents interface{} `json:"agents,omitempty"` // TODO: check if there is a more apt type for this
+	Agents agent.Agent `json:"agents,omitempty"`
 
 	// Whether to continue to run this step if any of the steps named in the depends_on attribute fail.
 	AllowDependencyFailure *bool `json:"allow_dependency_failure,omitempty"`
@@ -209,6 +211,8 @@ type ManualRetry struct {
 	Reason         *string `json:"reason,omitempty"`
 }
 
+// Step is defined on Command step to allow it to be used as [pipeline.Step]
+func (Command) Step() {}
+
 // Groupable is defined to allow Command step to be used as a [step.GroupStep]
-func (Command) Groupable() {
-}
+func (Command) Groupable() {}

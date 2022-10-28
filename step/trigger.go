@@ -3,6 +3,8 @@ package step
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/hasura/go-buildkite-dsl/pipeline"
 )
 
 // Trigger is used to created a Trigger step in buildkite.
@@ -13,7 +15,7 @@ type Trigger struct {
 	// and it corresponds to the name of the pipeline, converted to kebab-case.
 	//
 	// Example: "another-pipeline"
-	PipelineSlug string `json:"trigger"`
+	PipelineSlug pipeline.Slug `json:"trigger"`
 
 	// An optional map of attributes for the triggered build.
 	Build *Build `json:"build,omitempty"`
@@ -97,6 +99,8 @@ func (t Trigger) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+// Step is defined on Trigger step to allow it to be used as [pipeline.Step]
+func (Trigger) Step() {}
+
 // Groupable is defined to allow Trigger step to be used as a [step.GroupStep]
-func (Trigger) Groupable() {
-}
+func (Trigger) Groupable() {}

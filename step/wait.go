@@ -39,6 +39,8 @@ func (w Wait) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// Step is defined on Wait step to allow it to be used as [pipeline.Step]
+func (Wait) Step() {}
+
 // Groupable is defined to allow Wait step to be used as a [step.GroupStep]
-func (Wait) Groupable() {
-}
+func (Wait) Groupable() {}

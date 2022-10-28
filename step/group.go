@@ -46,6 +46,9 @@ func (g Group) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p)
 }
 
+// Step is defined on Group step to allow it to be used as [pipeline.Step]
+func (Group) Step() {}
+
 type GroupStep interface {
 	Groupable()
 }
