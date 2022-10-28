@@ -1,5 +1,10 @@
 package step
 
+import (
+	"encoding/json"
+	"errors"
+)
+
 // Trigger is used to created a Trigger step in buildkite.
 //
 // For more details, refer: https://buildkite.com/docs/pipelines/trigger-step
@@ -8,7 +13,7 @@ type Trigger struct {
 	// and it corresponds to the name of the pipeline, converted to kebab-case.
 	//
 	// Example: "another-pipeline"
-	Trigger string `json:"trigger"`
+	PipelineSlug string `json:"trigger"`
 
 	// An optional map of attributes for the triggered build.
 	Build *Build `json:"build,omitempty"`
@@ -80,4 +85,18 @@ type Build struct {
 	//
 	// Example: RAILS_ENV: "test"
 	Env map[string]string `json:"env,omitempty"`
+}
+
+func (t Trigger) MarshalJSON() ([]byte, error) {
+	if len(t.PipelineSlug) == 0 {
+		return nil, errors.New("trigger step should have a non-empty pipeline slug")
+	}
+
+	type psuedo Trigger
+	p := psuedo(t)
+	return json.Marshal(p)
+}
+
+// Groupable is defined to allow Trigger step to be used as a [step.GroupStep]
+func (Trigger) Groupable() {
 }

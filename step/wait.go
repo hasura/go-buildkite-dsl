@@ -38,3 +38,7 @@ func (w Wait) MarshalJSON() ([]byte, error) {
 		psuedo: psuedo(w),
 	})
 }
+
+// Groupable is defined to allow Wait step to be used as a [step.GroupStep]
+func (Wait) Groupable() {
+}

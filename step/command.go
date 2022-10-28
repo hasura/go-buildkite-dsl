@@ -208,3 +208,7 @@ type ManualRetry struct {
 	PermitOnPassed *bool   `json:"permit_on_passed,omitempty"`
 	Reason         *string `json:"reason,omitempty"`
 }
+
+// Groupable is defined to allow Command step to be used as a [step.GroupStep]
+func (Command) Groupable() {
+}
