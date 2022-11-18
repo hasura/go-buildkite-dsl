@@ -9,3 +9,18 @@ Write Buildkite configs in Go :kite: :memo:
 ```
 go get github.com/hasura/go-buildkite-dsl
 ```
+
+## Contributing
+
+Use `pkgsite` to view the documentation of the library locally during development. This could be installed by
+
+```
+# install pkgsite
+go install golang.org/x/pkgsite/cmd/pkgsite@latest
+
+# run pkgsite
+pkgsite
+
+# visit http://localhost:8080/github.com/hasura/go-buildkite-dsl
+# to see the docs
+```
