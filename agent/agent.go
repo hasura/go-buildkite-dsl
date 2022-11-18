@@ -1,3 +1,3 @@
 package agent
 
-type Agent map[any]string
+type Agent map[string]string
