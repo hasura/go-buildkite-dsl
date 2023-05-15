@@ -18,6 +18,9 @@ func Example_simple() {
 	p.Agents = agent.Agent{
 		"queue": "aws-spot-ubuntu-small",
 	}
+	p.Env = map[string]string{
+		"KEY": "Value",
+	}
 	jobA := step.Command{
 		Label:   str("job a"),
 		Key:     str("job-a"),
@@ -35,6 +38,9 @@ func Example_simple() {
 	// {
 	// 	"agents": {
 	// 		"queue": "aws-spot-ubuntu-small"
+	// 	},
+	// 	"env": {
+	// 		"KEY": "Value"
 	// 	},
 	// 	"steps": [
 	// 		{

@@ -9,9 +9,10 @@ type Step interface {
 type Slug string
 
 type Pipeline struct {
-	Slug   Slug        `json:"-"`
-	Agents agent.Agent `json:"agents,omitempty"`
-	Steps  []Step      `json:"steps"`
+	Slug   Slug              `json:"-"`
+	Agents agent.Agent       `json:"agents,omitempty"`
+	Env    map[string]string `json:"env,omitempty"`
+	Steps  []Step            `json:"steps"`
 }
 
 func New(s Slug) *Pipeline {
